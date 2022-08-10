@@ -1,7 +1,13 @@
 from collections import deque
 from dataclasses import dataclass
-from typing import List
+from enum import Enum
+from typing import List, Optional
 
+
+class Status(Enum):
+    NotYet = 0
+    Found = 1
+    Visited = 2
 
 @dataclass
 class Node:
@@ -9,12 +15,15 @@ class Node:
     in_deg: int
     # 各ノードから出ている有向エッジ
     outedge: List[int]
+    visited: Optional[Status] = Status.NotYet
+
+
 
 
 def khan(edges: List[List[int]], n: int):
 
     m = len(edges)
-    nodes = [Node(in_deg=0, outedge=[]) for i in range(n)]
+    nodes = [Node(in_deg=0, outedge=[]) for _ in range(n)]
     ans = []
     q = deque([])  # stackでもqueueでもいい
 
@@ -41,8 +50,29 @@ def khan(edges: List[List[int]], n: int):
 
 
 def dfs(edges: List[List[int]], n: int):
-    # TODO
-    return
+    s = Status
+    nodes = [Node(in_deg=0, outedge=[], visited=s.NotYet) for _ in range(n)]
+    q = deque([])
+    for (v, u) in edges:
+        nodes[v].outedge.append(u)
+        nodes[u].in_deg += 1
+
+    # あまりわかってない.
+    # DFSで探索しているから,すでに見つかっていて訪問していないノードが見えるのはおかしい的な感じらしい
+    def check(v):
+        if nodes[v].visited == s.Found:
+            return -1
+        elif nodes[v].visited == s.NotYet:
+            nodes[v].visited = s.Found
+            for u in nodes[v].outedge:
+                check(u)
+            nodes[v].visited == s.Visited
+            q.appendleft(v)
+
+    for i in range(n):
+        check(i)
+    return q
+
 
 
 if __name__ == "__main__":
@@ -50,4 +80,6 @@ if __name__ == "__main__":
         [0,1], [0,2], [1,3], [2,3], [2,4], [3,4]
     ]
     ans = khan(edges, 5)
+    print(ans)
+    ans = dfs(edges, 5)
     print(ans)
